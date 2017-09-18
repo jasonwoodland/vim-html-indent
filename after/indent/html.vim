@@ -37,6 +37,22 @@ fun! HtmlIndentGet(cur_lnum, use_syntax_check)
     " Get attribute indentation from prev line
     let align = match(prev_line, '^\s*<[^ >]\+\s\+\zs\w.*[^>]$') - 1
 
+    " If prev_line is >...</tag> then find <tag... indentation
+    if match(prev_line, '>.*</[a-zA-Z0-9-]*>$') != -1
+	let slnum = prev_lnum
+
+	while match(getline(slnum), '^\s*<') == -1
+	    let slnum = slnum - 1
+	endwhile
+
+	return indent(slnum)
+    endif
+
+    " If prev_line is ...</tag> then keep indentation
+    if match(prev_line, '</[a-zA-Z0-9-]*>$') != -1
+	return indent(prev_lnum)
+    endif
+
     " If cur_line is </close>
     if match(cur_line, '^\s*</[a-zA-Z]*>$') != -1	
 
